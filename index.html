@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reset Password</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>body{font-family:system-ui;margin:20px;max-width:540px}</style>
+    <script type="module">
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+      // Replace with your project values
+      const SUPABASE_URL = 'https://eotuawlegqyqthsuxdmt.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvdHVhd2xlZ3F5cXRoc3V4ZG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1Njk5OTUsImV4cCI6MjA3NTE0NTk5NX0.KgyUcy4ubmQHiCpfeLRWRC-J2xL3-9BG7EIUJSb1Tds';
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Parse tokens from URL fragment (#access_token=...&refresh_token=...&type=recovery)
+      const params = new URLSearchParams(location.hash.slice(1));
+      const type = params.get('type');
+      const access_token = params.get('access_token');
+
+      // If recovery session present, set the session so updateUser works
+      async function ensureSession() {
+        if (type === 'recovery' && access_token) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token: params.get('refresh_token'),
+          });
+          if (error) {
+            document.getElementById('status').textContent = 'Error setting session: ' + error.message;
+          } else {
+            document.getElementById('status').textContent = 'Session set. Enter your new password.';
+            document.getElementById('form').style.display = 'block';
+          }
+        } else {
+          document.getElementById('status').textContent = 'Invalid or expired reset link.';
+        }
+      }
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        const newPass = document.getElementById('password').value.trim();
+        const { data, error } = await supabase.auth.updateUser({ password: newPass });
+        const out = document.getElementById('status');
+        if (error) {
+          out.textContent = 'Failed to update password: ' + error.message;
+        } else {
+          out.textContent = 'Password updated successfully. You can close this page.';
+          document.getElementById('form').style.display = 'none';
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('form').addEventListener('submit', handleSubmit);
+        ensureSession();
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Reset Password</h1>
+    <p id="status">Loading…</p>
+    <form id="form" style="display:none">
+      <label>New password<br />
+        <input id="password" type="password" minlength="6" required />
+      </label>
+      <br /><br />
+      <button type="submit">Update Password</button>
+    </form>
+  </body>
+</html>
