@@ -4,7 +4,70 @@
     <meta charset="utf-8" />
     <title>Reset Password</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>body{font-family:system-ui;margin:20px;max-width:540px}</style>
+    <style>
+      :root{
+        --brand:#63C1E3;
+        --bg-top:#63C1E3;
+        --bg-bot:#1E2931;
+        --glass-bg: rgba(255,255,255,0.08);
+        --glass-stroke: rgba(255,255,255,0.16);
+        --text:#fff;
+        --text-muted: rgba(255,255,255,0.75);
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+        display:flex; align-items:center; justify-content:center;
+      }
+      .container{
+        width:100%; max-width:420px; padding:16px;
+      }
+      .glass{
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        padding: 16px;
+      }
+      .header{
+        display:flex; align-items:center; justify-content:space-between;
+        margin-bottom:12px;
+      }
+      .title{font-size:20px; font-weight:800; letter-spacing:.2px}
+      .chip{
+        padding:6px 10px; border-radius:12px; border:1px solid var(--glass-stroke);
+        background: rgba(255,255,255,0.10); color: var(--text);
+        font-size:12px; font-weight:700;
+      }
+      .muted{color: var(--text-muted); font-size: 13px}
+      .field{display:flex; flex-direction:column; gap:6px; margin-top:12px}
+      label{font-size:12px; color:var(--text-muted)}
+      input[type="password"]{
+        width:100%;
+        padding:12px 12px;
+        border-radius:14px;
+        border:1px solid var(--glass-stroke);
+        background: rgba(255,255,255,0.08);
+        color: var(--text);
+        outline:none;
+      }
+      .actions{display:flex; gap:8px; justify-content:flex-end; margin-top:14px}
+      .btn{
+        appearance:none; border:none; cursor:pointer;
+        padding:10px 16px; border-radius:999px; font-weight:700;
+      }
+      .btn.secondary{background: rgba(255,255,255,0.12); color: var(--text)}
+      .btn.primary{background: var(--brand); color:#fff}
+      .status{margin-top:10px; font-size:13px}
+      .hidden{display:none}
+    </style>
+
     <script type="module">
       import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -29,8 +92,8 @@
           if (error) {
             document.getElementById('status').textContent = 'Error setting session: ' + error.message;
           } else {
-            document.getElementById('status').textContent = 'Session set. Enter your new password.';
-            document.getElementById('form').style.display = 'block';
+            document.getElementById('loadingRow').style.display = 'none';
+            document.getElementById('form').classList.remove('hidden');
           }
         } else {
           document.getElementById('status').textContent = 'Invalid or expired reset link.';
@@ -46,7 +109,7 @@
           out.textContent = 'Failed to update password: ' + error.message;
         } else {
           out.textContent = 'Password updated successfully. You can close this page.';
-          document.getElementById('form').style.display = 'none';
+          document.getElementById('form').classList.add('hidden');
         }
       }
 
@@ -57,14 +120,31 @@
     </script>
   </head>
   <body>
-    <h1>Reset Password</h1>
-    <p id="status">Loading…</p>
-    <form id="form" style="display:none">
-      <label>New password<br />
-        <input id="password" type="password" minlength="6" required />
-      </label>
-      <br /><br />
-      <button type="submit">Update Password</button>
-    </form>
+    <div class="container">
+      <div class="glass">
+        <div class="header">
+          <div style="display:flex; align-items:center; gap:10px">
+            <img src="./Logo.svg" alt="Gabay" style="width:28px;height:28px; display:block" />
+            <div class="title">Reset Password</div>
+          </div>
+          <div class="chip">Secure</div>
+        </div>
+        <p class="muted">Enter your new password below. This page will securely update your account.</p>
+
+        <div id="loadingRow" class="status">Loading…</div>
+
+        <form id="form" class="hidden">
+          <div class="field">
+            <label for="password">New Password</label>
+            <input id="password" type="password" minlength="6" placeholder="••••••" required />
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn primary">Update Password</button>
+          </div>
+        </form>
+
+        <div id="status" class="status"></div>
+      </div>
+    </div>
   </body>
 </html>
